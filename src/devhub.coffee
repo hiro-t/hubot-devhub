@@ -3,7 +3,10 @@
 
 class Devhub extends Adapter
   send: (envelope, strings...) ->
-    @bot.send str for str in strings
+    if envelope.room?
+      @bot.send envelope.room, str for str in strings
+    else
+      @bot.send null, str for str in strings
 
   run: ->
     options =
@@ -32,8 +35,11 @@ class DevhubStreaming extends EventEmitter
     @socket = client.connect(options.url);
     @room_id = 1
 
-  send: (message) ->
-    @socket.emit "message", {name:@name, msg:message, room_id:@room_id, avatar:"img/hubot.png" }
+  send: (room, message) ->
+    if room?
+      @socket.emit "message", {name:@name, msg:message, room_id:room, avatar:"img/hubot.png" }
+    else
+      @socket.emit "message", {name:@name, msg:message, room_id:@room_id, avatar:"img/hubot.png" }
 
   listen: ->
     @socket.on "message", (item)=>
